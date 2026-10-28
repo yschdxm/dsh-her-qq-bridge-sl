@@ -45,7 +45,6 @@ window.__ModuleLoader__.load({
       const setMsg = (props && props.setMsg) || (() => {})
       const [st, setSt] = React.useState(null)
       const [msg, setLocalMsg] = React.useState('')
-      const [qrTick, setQrTick] = React.useState(0)
       const [rules, setRules] = React.useState(null)
       const backend = (st && st.backend) || 'qq'
       const label = backend === 'snowluma' ? 'SnowLuma' : backend === 'napcat' ? 'NapCat' : 'QQ 客户端'
@@ -58,7 +57,6 @@ window.__ModuleLoader__.load({
       React.useEffect(() => {
         if (!st || st.wsConnected) return
         const t = setInterval(() => {
-          setQrTick((x) => x + 1)
           getJson('/qq-bridge/status').then(setSt).catch(() => {})
         }, 8000)
         return () => clearInterval(t)
@@ -117,47 +115,38 @@ window.__ModuleLoader__.load({
                   ? h('span', { 'data-qqsl-chip': '', style: { background: 'rgba(76,175,80,.18)', color: '#4caf50' } }, '推送已连接')
                   : h('span', { 'data-qqsl-chip': '', style: { background: 'rgba(239,83,80,.18)', color: '#ef5350' } }, '⚠ 推送未连接'),
               ),
-              h('div', { 'data-qqsl-tip': '' }, '未连接：登录失效扫下方码；进程问题点重启。状态自动刷新。'),
-              st.login && st.login.error
-                ? h('div', { style: { textAlign: 'center', margin: '8px 0 4px' } },
-                    h('img', {
-                      src: '/qq-bridge/qrcode?t=' + qrTick, alt: 'QQ 登录二维码',
-                      style: { width: '148px', height: '148px', borderRadius: '8px', background: '#fff', padding: '6px', display: 'block', margin: '0 auto' },
-                      onError: (e) => { e.target.style.display = 'none' },
-                      onLoad: (e) => { e.target.style.display = 'block' },
-                    }),
-                    h('div', { 'data-qqsl-tip': '', style: { textAlign: 'center' } },
-                      Number.isFinite(st.qrAgeSeconds)
-                        ? '二维码生成于 ' + (st.qrAgeSeconds < 90 ? st.qrAgeSeconds + ' 秒前' : Math.round(st.qrAgeSeconds / 60) + ' 分钟前') + (st.qrAgeSeconds > 180 ? '（可能已过期）' : '')
-                        : '暂无二维码',
-                    ),
-                    h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '6px' } },
-                      h('button', {
-                        'data-qqsl-btn': 'data-qqsl-btn-sm',
-                        onClick: async () => {
-                          note('⏳ 请求重新出码…')
-                          try {
-                            const r = await postJson('/qq-bridge/qr/refresh', {})
-                            setQrTick((x) => x + 1)
-                            getJson('/qq-bridge/status').then(setSt).catch(() => {})
-                            note(r.note ? '✅ ' + r.note : '🔄 已请求新二维码')
-                          } catch (e) { note('❌ 刷新失败：' + e.message) }
-                        },
-                      }, '🔄 刷新二维码'),
-                      h('button', {
-                        'data-qqsl-btn': 'data-qqsl-btn-sm',
-                        onClick: async () => {
-                          note('⏳ 重启 QQ 客户端…')
-                          try {
-                            const r = await postJson('/qq-bridge/restart', {})
-                            note(r.note ? '✅ ' + r.note : '✅ 已重启')
-                            setQrTick((x) => x + 1)
-                          } catch (e) { note('❌ 重启失败：' + e.message) }
-                        },
-                      }, '🔁 重启客户端'),
-                    ),
-                  )
-                : null,
+              h('div', { 'data-qqsl-tip': '' },
+                'SnowLuma 登录在 WebUI / 远程桌面完成，不使用 NapCat 二维码接口。'),
+              h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', margin: '6px 0 10px' } },
+                h('a', {
+                  href: (st && st.webuiUrl) || 'http://192.168.2.192:5099',
+                  target: '_blank', rel: 'noreferrer',
+                  'data-qqsl-btn': 'data-qqsl-btn-sm',
+                  style: { textDecoration: 'none', display: 'inline-block' },
+                }, '打开 WebUI'),
+                h('a', {
+                  href: (st && st.novncUrl) || 'http://192.168.2.192:6081',
+                  target: '_blank', rel: 'noreferrer',
+                  'data-qqsl-btn': 'data-qqsl-btn-sm',
+                  style: { textDecoration: 'none', display: 'inline-block' },
+                }, '打开远程桌面（扫码用）'),
+              ),
+              h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+                h('button', {
+                  'data-qqsl-btn': 'data-qqsl-btn-sm',
+                  onClick: async () => {
+                    note('⏳ 重启 QQ 客户端…')
+                    try {
+                      const r = await postJson('/qq-bridge/restart', {})
+                      note(r.note ? '✅ ' + r.note : '✅ 已重启')
+                    } catch (e) { note('❌ 重启失败：' + e.message) }
+                  },
+                }, '🔁 重启客户端'),
+                h('button', {
+                  'data-qqsl-btn': 'data-qqsl-btn-sm',
+                  onClick: () => { getJson('/qq-bridge/status').then(setSt).catch((e) => setSt({ error: e.message })); note('已刷新状态') },
+                }, '刷新状态'),
+              ),
             ),
         ),
         msg || (st && st.error) ? null : null,
