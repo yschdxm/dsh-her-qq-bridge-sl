@@ -94,8 +94,62 @@ window.__ModuleLoader__.load({
           ? { background: 'rgba(239,83,80,.18)', color: '#ef5350' }
           : { background: 'rgba(255,171,64,.16)', color: '#ffb300' }
 
+      const links = h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', margin: '6px 0 4px', alignItems: 'center' } },
+        h('a', {
+          href: (st && st.webuiUrl) || 'http://192.168.2.192:5099',
+          target: '_blank', rel: 'noreferrer',
+          'data-qqsl-btn': 'data-qqsl-btn-sm',
+          style: { textDecoration: 'none', display: 'inline-block' },
+        }, '打开 WebUI'),
+        h('a', {
+          href: (st && st.novncUrl) || 'http://192.168.2.192:6081',
+          target: '_blank', rel: 'noreferrer',
+          'data-qqsl-btn': 'data-qqsl-btn-sm',
+          style: { textDecoration: 'none', display: 'inline-block' },
+        }, '打开远程桌面（扫码用）'),
+      )
+      const vncRow = (st && st.vncPassword)
+        ? h('div', { style: { fontSize: '12px', marginBottom: '8px', wordBreak: 'break-all' } },
+            h('span', { style: { opacity: 0.55, marginRight: '6px' } }, '远程桌面密码：'),
+            h('code', {
+              style: {
+                background: 'rgba(127,127,127,.12)',
+                padding: '2px 8px',
+                borderRadius: '6px',
+                fontFamily: 'ui-monospace, Consolas, monospace',
+                userSelect: 'all',
+              },
+            }, st.vncPassword),
+            h('button', {
+              'data-qqsl-btn': 'data-qqsl-btn-sm',
+              style: { marginLeft: '8px' },
+              onClick: async () => {
+                try {
+                  await navigator.clipboard.writeText(st.vncPassword)
+                  note('已复制远程桌面密码')
+                } catch (e) { note('复制失败，请手动选中') }
+              },
+            }, '复制'),
+          )
+        : null
+      const actions = h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+        h('button', {
+          'data-qqsl-btn': 'data-qqsl-btn-sm',
+          onClick: async () => {
+            note('⏳ 重启 QQ 客户端…')
+            try {
+              const r = await postJson('/qq-bridge/restart', {})
+              note(r.note ? '✅ ' + r.note : '✅ 已重启')
+            } catch (e) { note('❌ 重启失败：' + e.message) }
+          },
+        }, '重启客户端'),
+        h('button', {
+          'data-qqsl-btn': 'data-qqsl-btn-sm',
+          onClick: () => { getJson('/qq-bridge/status').then(setSt).catch((e) => setSt({ error: e.message })); note('已刷新状态') },
+        }, '刷新状态'),
+      )
+
       return h('div', { 'data-qqsl': '' },
-        // ── 连接 ──
         h('div', { 'data-qqsl-card': '' },
           h('div', { 'data-qqsl-title': '' }, '连接状态'),
           !st ? h('div', { 'data-qqsl-note': '' }, '加载中…')
@@ -117,39 +171,12 @@ window.__ModuleLoader__.load({
               ),
               h('div', { 'data-qqsl-tip': '' },
                 'SnowLuma 登录在 WebUI / 远程桌面完成，不使用 NapCat 二维码接口。'),
-              h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', margin: '6px 0 10px' } },
-                h('a', {
-                  href: (st && st.webuiUrl) || 'http://192.168.2.192:5099',
-                  target: '_blank', rel: 'noreferrer',
-                  'data-qqsl-btn': 'data-qqsl-btn-sm',
-                  style: { textDecoration: 'none', display: 'inline-block' },
-                }, '打开 WebUI'),
-                h('a', {
-                  href: (st && st.novncUrl) || 'http://192.168.2.192:6081',
-                  target: '_blank', rel: 'noreferrer',
-                  'data-qqsl-btn': 'data-qqsl-btn-sm',
-                  style: { textDecoration: 'none', display: 'inline-block' },
-                }, '打开远程桌面（扫码用）'),
-              ),
-              h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-                h('button', {
-                  'data-qqsl-btn': 'data-qqsl-btn-sm',
-                  onClick: async () => {
-                    note('⏳ 重启 QQ 客户端…')
-                    try {
-                      const r = await postJson('/qq-bridge/restart', {})
-                      note(r.note ? '✅ ' + r.note : '✅ 已重启')
-                    } catch (e) { note('❌ 重启失败：' + e.message) }
-                  },
-                }, '🔁 重启客户端'),
-                h('button', {
-                  'data-qqsl-btn': 'data-qqsl-btn-sm',
-                  onClick: () => { getJson('/qq-bridge/status').then(setSt).catch((e) => setSt({ error: e.message })); note('已刷新状态') },
-                }, '刷新状态'),
-              ),
+              links,
+              vncRow,
+              actions,
             ),
         ),
-        msg || (st && st.error) ? null : null,
+        msg ? h('div', { 'data-qqsl-note': '' }, msg) : null,
         // ── 群白名单 ──
         h('div', { 'data-qqsl-card': '' },
           h('div', { 'data-qqsl-title': '' }, '允许的群聊'),
