@@ -1,0 +1,30 @@
+{
+  "name": "dsh-her-qq-bridge-sl",
+  "version": "0.1.0",
+  "description": "她 · QQ 桥接（SnowLuma / OneBot v11）：协议适配 + 出站安全分类器，接入 dsh-her-kernel。sl = SnowLuma。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-client-ui-settings-plugins"
+      ]
+    }
+  },
+  "dependencies": {
+    "ws": "^8.22.0"
+  }
+}

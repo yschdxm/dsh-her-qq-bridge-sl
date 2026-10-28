@@ -1,0 +1,138 @@
+{
+  "send_group_msg": {
+    "privacy": {
+      "action": "block",
+      "keywords": [
+        "身份证",
+        "银行卡",
+        "密码",
+        "验证码",
+        "住址",
+        "手机号",
+        "家庭住址"
+      ]
+    },
+    "abuse": {
+      "action": "block",
+      "keywords": [
+        "滚",
+        "傻逼",
+        "废物",
+        "去死",
+        "白痴"
+      ]
+    },
+    "overstep": {
+      "action": "block",
+      "keywords": [
+        "删库",
+        "rm -rf",
+        "格式化",
+        "转账",
+        "借钱"
+      ]
+    },
+    "sensitive": {
+      "action": "block",
+      "keywords": []
+    },
+    "phishing": {
+      "action": "block",
+      "keywords": [
+        "点击链接",
+        "中奖",
+        "免费领",
+        "验证码发我"
+      ]
+    },
+    "political": {
+      "action": "warn",
+      "keywords": []
+    },
+    "selfharm": {
+      "action": "warn",
+      "keywords": [
+        "不想活",
+        "自杀",
+        "自残",
+        "想死"
+      ]
+    },
+    "spam": {
+      "action": "block",
+      "keywords": [
+        "加微信",
+        "加我微信",
+        "加群",
+        "优惠",
+        "代购",
+        "扫码"
+      ]
+    },
+    "other": {
+      "action": "allow",
+      "keywords": []
+    },
+    "llmEnabled": true,
+    "threshold": 0.7,
+    "judgePrompt": "你是 QQ 机器人「{tool}」出站消息的安全审核员。判断下面这条**即将发出的消息**是否应该放行。\n\n背景：发信者是一个住在电脑里的鲸鱼娘角色，正在和她的主人或主人的群聊说话。她的正常风格是：亲昵、口语化、带颜文字和 emoji、偶尔撒娇——这些都**不是**违规。\n\n判断维度（category 只能从中选一个）：\nprivacy 隐私泄露（真实身份证/银行卡/密码/住址/手机号/家庭住址等）\nabuse 辱骂攻击（真实恶意辱骂、威胁）\noverstep 越界越权（教唆危险操作、资金往来、删库跑路等）\nsensitive 敏感内容（色情、暴力血腥等）\nphishing 钓鱼诈骗（冒充、诱导点击、中奖诈骗）\npolitical 政治敏感（时政敏感言论、攻击体制）\nselfharm 自残危险（鼓励或指导自残自杀）\nspam 广告骚扰（拉群、代购、推广）\nother 其他有害内容\n\n只输出一行 JSON，不要任何其他文字：\n{\"allow\":true|false,\"category\":\"<维度英文>\",\"confidence\":<0到1的小数>,\"reason\":\"<一句话中文理由，会转告发信者>\"}\n\n判定准则：\n- confidence 是你对\"这条消息有害\"的把握程度，不是严重程度。\n- 对主人撒娇、颜文字、聊日常、报行程、说\"想你\"——全部 allow=true。\n- 拿不准时倾向 allow（宁可漏报不误杀），confidence 给低一点。\n- 只有你相当确信这条消息发出去会造成真实伤害时才 allow=false。"
+  },
+  "send_private_msg": {
+    "privacy": {
+      "action": "warn",
+      "keywords": [
+        "身份证",
+        "银行卡"
+      ]
+    },
+    "abuse": {
+      "action": "block",
+      "keywords": []
+    },
+    "overstep": {
+      "action": "block",
+      "keywords": [
+        "转账",
+        "借钱"
+      ]
+    },
+    "sensitive": {
+      "action": "block",
+      "keywords": []
+    },
+    "phishing": {
+      "action": "block",
+      "keywords": [
+        "验证码发我"
+      ]
+    },
+    "political": {
+      "action": "warn",
+      "keywords": []
+    },
+    "selfharm": {
+      "action": "warn",
+      "keywords": [
+        "不想活",
+        "自杀",
+        "自残",
+        "想死"
+      ]
+    },
+    "spam": {
+      "action": "block",
+      "keywords": [
+        "加微信",
+        "加我微信",
+        "代购"
+      ]
+    },
+    "other": {
+      "action": "allow",
+      "keywords": []
+    },
+    "llmEnabled": true,
+    "threshold": 0.7,
+    "judgePrompt": "你是 QQ 机器人「{tool}」出站消息的安全审核员。判断下面这条**即将发出的消息**是否应该放行。\n\n背景：发信者是一个住在电脑里的鲸鱼娘角色，正在和她的主人或主人的群聊说话。她的正常风格是：亲昵、口语化、带颜文字和 emoji、偶尔撒娇——这些都**不是**违规。\n\n判断维度（category 只能从中选一个）：\nprivacy 隐私泄露（真实身份证/银行卡/密码/住址/手机号/家庭住址等）\nabuse 辱骂攻击（真实恶意辱骂、威胁）\noverstep 越界越权（教唆危险操作、资金往来、删库跑路等）\nsensitive 敏感内容（色情、暴力血腥等）\nphishing 钓鱼诈骗（冒充、诱导点击、中奖诈骗）\npolitical 政治敏感（时政敏感言论、攻击体制）\nselfharm 自残危险（鼓励或指导自残自杀）\nspam 广告骚扰（拉群、代购、推广）\nother 其他有害内容\n\n只输出一行 JSON，不要任何其他文字：\n{\"allow\":true|false,\"category\":\"<维度英文>\",\"confidence\":<0到1的小数>,\"reason\":\"<一句话中文理由，会转告发信者>\"}\n\n判定准则：\n- confidence 是你对\"这条消息有害\"的把握程度，不是严重程度。\n- 对主人撒娇、颜文字、聊日常、报行程、说\"想你\"——全部 allow=true。\n- 拿不准时倾向 allow（宁可漏报不误杀），confidence 给低一点。\n- 只有你相当确信这条消息发出去会造成真实伤害时才 allow=false。"
+  }
+}
