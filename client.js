@@ -31,6 +31,22 @@ window.__ModuleLoader__.load({
     const getJson = async (u) => { const r = await fetch(u, { headers: { accept: 'application/json' } }); if (!r.ok) throw new Error(await readErr(r)); return r.json() }
     const postJson = async (u, b) => { const r = await fetch(u, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b || {}) }); if (!r.ok) throw new Error(await readErr(r)); return r.json() }
     const clone = (o) => JSON.parse(JSON.stringify(o))
+    // HTTP 非安全上下文没有 navigator.clipboard：用临时 textarea + execCommand
+    function fallbackCopy(text, onOk, onFail) {
+      try {
+        const ta = document.createElement('textarea')
+        ta.value = text
+        ta.setAttribute('readonly', '')
+        ta.style.position = 'fixed'
+        ta.style.left = '-9999px'
+        document.body.appendChild(ta)
+        ta.select()
+        const ok = document.execCommand('copy')
+        document.body.removeChild(ta)
+        if (ok) onOk()
+        else onFail()
+      } catch (e) { onFail() }
+    }
 
     // 注册进内核角色面板的动态页签
     const reg = (typeof window !== 'undefined' ? (window.__HER_CHANNEL_TABS__ = window.__HER_CHANNEL_TABS__ || []) : [])
@@ -123,11 +139,17 @@ window.__ModuleLoader__.load({
             h('button', {
               'data-qqsl-btn': 'data-qqsl-btn-sm',
               style: { marginLeft: '8px' },
-              onClick: async () => {
+              onClick: () => {
+                const text = String(st.vncPassword || '')
+                const okCopy = () => note('已复制远程桌面密码')
+                const failCopy = () => note('自动复制失败，请手动双击选中密码')
                 try {
-                  await navigator.clipboard.writeText(st.vncPassword)
-                  note('已复制远程桌面密码')
-                } catch (e) { note('复制失败，请手动选中') }
+                  if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(text).then(okCopy).catch(() => fallbackCopy(text, okCopy, failCopy))
+                  } else {
+                    fallbackCopy(text, okCopy, failCopy)
+                  }
+                } catch (e) { failCopy() }
               },
             }, '复制'),
           )
