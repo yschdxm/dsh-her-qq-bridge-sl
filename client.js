@@ -221,34 +221,48 @@ window.__ModuleLoader__.load({
             const c = ch[type] || {}
             const n = c.notify || {}
             const a = c.app || {}
+            const isGroup = type === 'qq-group'
+            const isPrivate = type === 'qq-private'
             return h('div', { key: type, style: { border: '1px solid rgba(127,127,127,.14)', borderRadius: '8px', padding: '10px', marginBottom: '10px' } },
-              h('div', { style: { fontWeight: 600, marginBottom: '6px', fontSize: '13px' } }, type),
+              h('div', { style: { fontWeight: 600, marginBottom: '6px', fontSize: '13px' } },
+                isGroup ? 'qq-group（群聊）' : 'qq-private（私聊）'),
               h('label', { 'data-qqsl-label': '' }, '通知格式'),
               h('input', {
                 'data-qqsl-input': '', style: { width: '100%', marginBottom: '6px' },
                 value: n.format || '', onChange: (e) => setCh(type, 'notify.format', e.target.value),
               }),
               h('div', { 'data-qqsl-row': '' },
-                h('label', { 'data-qqsl-chk': '' }, h('input', { type: 'checkbox', checked: !!n.atOnly, onChange: (e) => setCh(type, 'notify.atOnly', e.target.checked) }), ' 仅 @她'),
-                h('label', { 'data-qqsl-chk': '' }, h('input', { type: 'checkbox', checked: !!n.dmPriority, onChange: (e) => setCh(type, 'notify.dmPriority', e.target.checked) }), ' 私聊优先'),
+                // 群：只弹 @她；私聊：永远优先，不显示 atOnly
+                isGroup
+                  ? h('label', { 'data-qqsl-chk': '' }, h('input', { type: 'checkbox', checked: !!n.atOnly, onChange: (e) => setCh(type, 'notify.atOnly', e.target.checked) }), ' 仅 @她才弹通知')
+                  : null,
+                isPrivate
+                  ? h('label', { 'data-qqsl-chk': '' }, h('input', { type: 'checkbox', checked: !!n.dmPriority, onChange: (e) => setCh(type, 'notify.dmPriority', e.target.checked) }), ' 私聊优先（不静默）')
+                  : null,
                 h('label', { 'data-qqsl-chk': '' }, h('input', { type: 'checkbox', checked: n.injectEnabled !== false, onChange: (e) => setCh(type, 'notify.injectEnabled', e.target.checked) }), ' 允许注入'),
-                h('label', { 'data-qqsl-chk': '' }, h('input', { type: 'checkbox', checked: n.injectRespectQuiet !== false, onChange: (e) => setCh(type, 'notify.injectRespectQuiet', e.target.checked) }), ' 夜间静默'),
+                // 夜间静默：两渠道都可选，但私聊默认关
+                h('label', { 'data-qqsl-chk': '' }, h('input', { type: 'checkbox', checked: n.injectRespectQuiet !== false && !isPrivate ? true : !!n.injectRespectQuiet, onChange: (e) => setCh(type, 'notify.injectRespectQuiet', e.target.checked) }), ' 受夜间静默'),
               ),
               h('div', { 'data-qqsl-row': '', style: { gap: '10px' } },
-                h('label', { style: { fontSize: '12px', display: 'flex', gap: '4px', alignItems: 'center' } }, '静默',
-                  h('input', { 'data-qqsl-input': '', style: { maxWidth: '52px', minWidth: '40px' }, type: 'number', value: Number(n.silentMinutes || 0), onChange: (e) => setCh(type, 'notify.silentMinutes', Number(e.target.value)) }),
-                  h('span', { style: { opacity: .55 } }, '分钟')),
+                // 静默分钟仅群聊有意义（私聊 dm 不静默）
+                isGroup
+                  ? h('label', { style: { fontSize: '12px', display: 'flex', gap: '4px', alignItems: 'center' } }, '静默',
+                    h('input', { 'data-qqsl-input': '', style: { maxWidth: '52px', minWidth: '40px' }, type: 'number', value: Number(n.silentMinutes || 0), onChange: (e) => setCh(type, 'notify.silentMinutes', Number(e.target.value)) }),
+                    h('span', { style: { opacity: .55 } }, '分钟'))
+                  : null,
                 h('label', { style: { fontSize: '12px', display: 'flex', gap: '4px', alignItems: 'center' } }, '一页',
                   h('input', { 'data-qqsl-input': '', style: { maxWidth: '52px', minWidth: '40px' }, type: 'number', value: Number(a.pageSize || 10), onChange: (e) => setCh(type, 'app.pageSize', Number(e.target.value)) }),
                   h('span', { style: { opacity: .55 } }, '条')),
                 h('label', { style: { fontSize: '12px', display: 'flex', gap: '4px', alignItems: 'center' } }, '冷却',
-                  h('input', { 'data-qqsl-input': '', style: { maxWidth: '52px', minWidth: '40px' }, type: 'number', value: Number(n.injectCooldownMinutes != null ? n.injectCooldownMinutes : 10), onChange: (e) => setCh(type, 'notify.injectCooldownMinutes', Number(e.target.value)) }),
+                  h('input', { 'data-qqsl-input': '', style: { maxWidth: '52px', minWidth: '40px' }, type: 'number', value: Number(n.injectCooldownMinutes != null ? n.injectCooldownMinutes : (isPrivate ? 0 : 10)), onChange: (e) => setCh(type, 'notify.injectCooldownMinutes', Number(e.target.value)) }),
                   h('span', { style: { opacity: .55 } }, '分钟')),
                 h('label', { style: { fontSize: '12px', display: 'flex', gap: '4px', alignItems: 'center' } }, '日上限',
-                  h('input', { 'data-qqsl-input': '', style: { maxWidth: '52px', minWidth: '40px' }, type: 'number', value: Number(n.injectDailyCap != null ? n.injectDailyCap : 8), onChange: (e) => setCh(type, 'notify.injectDailyCap', Number(e.target.value)) }),
+                  h('input', { 'data-qqsl-input': '', style: { maxWidth: '52px', minWidth: '40px' }, type: 'number', value: Number(n.injectDailyCap != null ? n.injectDailyCap : (isPrivate ? 0 : 8)), onChange: (e) => setCh(type, 'notify.injectDailyCap', Number(e.target.value)) }),
                   h('span', { style: { opacity: .55 } }, '次')),
               ),
-              h('div', { 'data-qqsl-tip': '' }, '注入参数仅作用于本渠道。冷却/上限 0=不限；输出中自动挂起，空闲后再注入。'),
+              h('div', { 'data-qqsl-tip': '' }, isGroup
+                ? '群聊：默认仅 @她 才弹通知；冷却/上限 0=不限。'
+                : '私聊：默认不静默、无冷却/日上限；主人消息优先注入。'),
               h('button', { 'data-qqsl-btn': 'data-qqsl-btn-sm', onClick: () => saveChannel(type) }, '保存 ' + type),
             )
           }),
