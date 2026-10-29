@@ -1,3 +1,11 @@
 node_modules/
 *.log
 .DS_Store
+*.tmp
+.idea/
+.vscode/
+# 本地密钥（勿提交）
+onebot-token.txt
+*.token
+.env
+.env.*
