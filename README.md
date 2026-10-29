@@ -32,13 +32,16 @@ DeepSeek Harness 插件：**QQ 桥接（SnowLuma / OneBot v11）**，对接 [dsh
 
 ## 安装
 
-Harness 配置 `link:` 本目录：
+先安装并启用 [dsh-her-kernel](https://github.com/yschdxm/dsh-her-kernel)。
+
+再用 Harness 的 **plugin_manager → install_bundle** 安装本包（target 为绝对路径的包目录）；开发源码链接等价于 profile 依赖：
 
 ```json
-"dsh-her-qq-bridge-sl": "link:/path/to/dsh-her-qq-bridge-sl"
+"dsh-her-qq-bridge-sl": "link:/absolute/path/to/dsh-her-qq-bridge-sl"
 ```
 
-需要已安装 **dsh-her-kernel**。不要与 nc 桥接同时启用。
+请通过插件管理写入依赖，不要手改 profile 的 `package.json` / `cordis.patch.yml`。  
+不要与 NapCat 桥接（nc）同时启用。
 
 ## 默认连接（可配置）
 
